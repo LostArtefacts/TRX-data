@@ -27,6 +27,7 @@ def main() -> None:
     src_dir = Path(__file__).parent.parent.resolve()
     upload(src_dir / "tr1.zip", "tr1x/main.zip")
     upload(src_dir / "tr2.zip", "tr2x/main.zip")
+    upload(src_dir / "tr2gm.zip", "tr2x/trgm.zip")
 
 
 if __name__ == "__main__":
