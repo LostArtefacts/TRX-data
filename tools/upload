@@ -5,7 +5,7 @@ from pathlib import Path
 from subprocess import run
 
 REMOTE_HOST = "lostartefacts"
-REMOTE_BASE = "srv/website/aux"
+REMOTE_BASE = "srv/website_aux"
 
 
 def upload(source: Path, target: str) -> None:
