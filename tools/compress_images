@@ -50,18 +50,16 @@ def main() -> None:
     total_target_size = 0
 
     for source_dir, target_dir in DIR_PAIRS:
-        target_dir.mkdir(parents=True, exist_ok=True)
-
         for source_path in source_dir.rglob("*.png"):
-            target_path = target_dir / f"{source_path.stem}.webp"
+            target_path = target_dir / source_path.relative_to(
+                source_dir
+            ).with_suffix(".webp")
+            target_path.parent.mkdir(parents=True, exist_ok=True)
 
-            print(
-                f"Converting {source_path.relative_to(source_dir)} "
-                f"to {target_path.relative_to(target_dir)}..."
-            )
+            print(f"Converting {source_path} to {target_path}: ", end="")
 
             if target_path.exists() and not args.force:
-                print("    target already exists, skipping")
+                print("target already exists, skipping")
                 continue
 
             check_call([
@@ -76,7 +74,7 @@ def main() -> None:
             target_size = target_path.stat().st_size
             total_source_size += source_size
             total_target_size += target_size
-            print("    " + format_size_change(source_size, target_size))
+            print(format_size_change(source_size, target_size))
 
     print()
     print("Total:")
