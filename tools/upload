@@ -31,6 +31,7 @@ def main() -> None:
     parser.parse_args()
     src_dir = Path(__file__).parent.parent.resolve()
     upload(src_dir / "tr1.zip", "tr1x/main.zip")
+    upload(src_dir / "tr1ub.zip", "tr1x/trub.zip")
     upload(src_dir / "tr2.zip", "tr2x/main.zip")
     upload(src_dir / "tr2gm.zip", "tr2x/trgm.zip")
     upload(src_dir / "tr3.zip", "tr3x/main.zip")
