@@ -6,6 +6,7 @@ from subprocess import check_call
 ROOT_DIR = Path(__file__).parents[1]
 DIR_PAIRS = (
     (ROOT_DIR / "tr1/images", ROOT_DIR / "tr1/ship/data/images"),
+    (ROOT_DIR / "tr1ub/images", ROOT_DIR / "tr1ub/ship/data/images"),
     (ROOT_DIR / "tr2/images", ROOT_DIR / "tr2/ship/data/images"),
     (ROOT_DIR / "tr2gm/images", ROOT_DIR / "tr2gm/ship/data/images"),
     (ROOT_DIR / "tr3/images", ROOT_DIR / "tr3/ship/data/images"),
