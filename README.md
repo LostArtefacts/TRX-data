@@ -1,7 +1,7 @@
 # TRX asset offload repository
 
 This repository contains the large media assets (images, music, installer
-icons, etc.) for **TR1X** and **TR2X**, offloaded from the main codebase to
+icons, etc.) for **TRX**, offloaded from the main codebase to
 keep bundle sizes small and improve clone/download performance.
 
 
@@ -11,8 +11,10 @@ To create zip archives of each `ship` directory (e.g., `tr1/ship` and
 `tr2/ship`), run:
 
 ```bash
-python tools/zip_ship.py
+python tools/zip_ship
 ```
 
-This will produce `tr1.zip` and `tr2.zip` in the root of the repository,
-containing the contents of each `ship` directory.
+This keeps the legacy archives in the repository root for existing TR1X/TR2X
+consumers, and also creates combined TRX archives under `trx/`, such as
+`trx/tr1.zip`, `trx/tr1-ub.zip`, `trx/tr1-demo-pc.zip`, `trx/tr2.zip`,
+`trx/tr2-gm.zip`, and `trx/tr3.zip`.

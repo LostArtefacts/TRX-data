@@ -12,16 +12,111 @@ Usage:
 
 import argparse
 import zipfile
+from collections.abc import Iterator
 from pathlib import Path
 
+COMBINED_OUTPUT_DIR = "trx"
+LEGACY_OUTPUT_DIR = "legacy"
+LEGACY_ZIP_NAME_OVERRIDES: dict[str, str | None] = {
+    "tr1-demo-pc": None,
+    "tr1-ub": "tr1ub",
+    "tr2-gm": "tr2gm",
+}
+COMBINED_ARCNAME_RULES: dict[str, list[tuple[Path, Path]]] = {
+    "tr1": [
+        (Path("data/images"), Path("games/tr1/images")),
+    ],
+    "tr1-ub": [
+        (Path("data/images"), Path("games/tr1-ub/images")),
+    ],
+    "tr2": [
+        (Path("data/images"), Path("games/tr2/images")),
+        (Path("music"), Path("games/tr2/music")),
+    ],
+    "tr2-gm": [
+        (Path("data/images"), Path("games/tr2-gm/images")),
+        (Path("data/main_gm.sfx"), Path("games/tr2-gm/main_gm.sfx")),
+        (Path("data"), Path("games/tr2-gm/levels")),
+    ],
+    "tr3": [
+        (Path("data/images"), Path("games/tr3/images")),
+    ],
+}
 
-def zip_ship_directory(ship_dir: Path, output_path: Path) -> None:
+
+def map_arcname(parent_name: str, arcname: Path) -> Path:
+    if arcname.parts[:1] == ("games",):
+        return arcname
+
+    for source, target in COMBINED_ARCNAME_RULES.get(parent_name, []):
+        if arcname.is_relative_to(source):
+            return target / arcname.relative_to(source)
+
+    return arcname
+
+
+def zip_ship_directory(
+    ship_dir: Path, output_path: Path, *, remap_for_combined: bool
+) -> None:
     """Create a zip archive of all files under ship_dir at output_path."""
+    parent_name = ship_dir.parent.name
+    output_path.parent.mkdir(parents=True, exist_ok=True)
     with zipfile.ZipFile(output_path, "w", zipfile.ZIP_DEFLATED) as zf:
         for file_path in ship_dir.rglob("*"):
             if file_path.is_file():
                 arcname = file_path.relative_to(ship_dir)
+                if remap_for_combined:
+                    arcname = map_arcname(parent_name, arcname)
                 zf.write(file_path, arcname)
+
+
+def collect_outputs(
+    root_dir: Path, out_dir: Path, pattern: str
+) -> Iterator[tuple[Path, Path, bool]]:
+    for ship_dir in root_dir.rglob(pattern):
+        if not ship_dir.is_dir():
+            continue
+
+        # Skip nested pattern directories under another pattern directory
+        skip = False
+        for parent in ship_dir.parents:
+            if parent == root_dir:
+                break
+            if parent.name == pattern:
+                skip = True
+                break
+        if skip:
+            continue
+
+        parent_name = ship_dir.parent.name
+        if legacy_name := LEGACY_ZIP_NAME_OVERRIDES.get(
+            parent_name, parent_name
+        ):
+            yield (
+                ship_dir,
+                out_dir / LEGACY_OUTPUT_DIR / f"{legacy_name}.zip",
+                False,
+            )
+        yield (
+            ship_dir,
+            out_dir / COMBINED_OUTPUT_DIR / f"{parent_name}.zip",
+            True,
+        )
+
+
+def run_outputs(outputs: list[tuple[Path, Path, bool]]) -> list[Path]:
+    created: list[Path] = []
+
+    for ship_dir, output_path, remap_for_combined in outputs:
+        zip_ship_directory(
+            ship_dir,
+            output_path,
+            remap_for_combined=remap_for_combined,
+        )
+        print(f"Created archive: {output_path}")
+        created.append(output_path)
+
+    return created
 
 
 def main() -> None:
@@ -33,8 +128,14 @@ def main() -> None:
     parser.add_argument(
         "--root",
         "-r",
-        default=".",
+        default=Path(),
         help="Root directory to scan (default: current directory)",
+    )
+    parser.add_argument(
+        "--out",
+        "-o",
+        default=Path("out"),
+        help="Output directory to put zip files in (default: ./out/)",
     )
     parser.add_argument(
         "--pattern",
@@ -44,28 +145,12 @@ def main() -> None:
     )
     args = parser.parse_args()
 
-    root_dir: Path = Path(args.root).expanduser().resolve()
+    root_dir: Path = args.root.expanduser().resolve()
+    out_dir: Path = args.out.expanduser()
     pattern: str = args.pattern
-    created: list[Path] = []
-    for ship_dir in root_dir.rglob(pattern):
-        if not ship_dir.is_dir():
-            continue
-        # Skip nested pattern directories under another pattern directory
-        skip = False
-        for parent in ship_dir.parents:
-            if parent == root_dir:
-                break
-            if parent.name == pattern:
-                skip = True
-                break
-        if skip:
-            continue
-        parent_name = ship_dir.parent.name
-        zip_name = f"{parent_name}.zip"
-        output_path: Path = root_dir / zip_name
-        zip_ship_directory(ship_dir, output_path)
-        print(f"Created archive: {output_path}")
-        created.append(output_path)
+    outputs = sorted(collect_outputs(root_dir, out_dir, pattern))
+    created = run_outputs(outputs)
+
     if not created:
         print(f"No directories named '{pattern}' found under {root_dir}.")
 

@@ -8,7 +8,7 @@ REMOTE_HOST = "lostartefacts"
 REMOTE_BASE = "srv/website_aux"
 
 
-def upload(source: Path, target: str) -> None:
+def upload(source: Path, target: str, dry_run: bool = False) -> None:
     """
     Upload a file to the remote lostartefacts server under /srv/aux/{target}.
     """
@@ -17,24 +17,42 @@ def upload(source: Path, target: str) -> None:
     remote_path = f"{REMOTE_BASE}/{target}"
     remote_dir = os.path.dirname(remote_path)
 
-    print(f"Creating remote directory: lostartefacts:{remote_dir}")
-    run(["ssh", REMOTE_HOST, "mkdir", "-p", remote_dir], check=True)
+    if not dry_run:
+        print(f"Creating remote directory: lostartefacts:{remote_dir}")
+        run(["ssh", REMOTE_HOST, "mkdir", "-p", remote_dir], check=True)
 
     print(f"Uploading {source} to lostartefacts:{remote_path}")
-    run(["scp", str(source), f"lostartefacts:{remote_path}"], check=True)
+    if not dry_run:
+        run(["scp", str(source), f"lostartefacts:{remote_path}"], check=True)
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(
         description="Uploads the compiled zip files to the server."
     )
-    parser.parse_args()
-    src_dir = Path(__file__).parent.parent.resolve()
-    upload(src_dir / "tr1.zip", "tr1x/main.zip")
-    upload(src_dir / "tr1ub.zip", "tr1x/trub.zip")
-    upload(src_dir / "tr2.zip", "tr2x/main.zip")
-    upload(src_dir / "tr2gm.zip", "tr2x/trgm.zip")
-    upload(src_dir / "tr3.zip", "tr3x/main.zip")
+    parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Print the upload actions without running ssh/scp.",
+    )
+    args = parser.parse_args()
+    out_dir = Path(__file__).parents[1].resolve() / "out"
+    upload(out_dir / "legacy/tr1.zip", "tr1x/main.zip", dry_run=args.dry_run)
+    upload(out_dir / "legacy/tr1ub.zip", "tr1x/trub.zip", dry_run=args.dry_run)
+    upload(out_dir / "legacy/tr2.zip", "tr2x/main.zip", dry_run=args.dry_run)
+    upload(out_dir / "legacy/tr2gm.zip", "tr2x/trgm.zip", dry_run=args.dry_run)
+    upload(out_dir / "legacy/tr3.zip", "tr3x/main.zip", dry_run=args.dry_run)
+
+    upload(out_dir / "trx/tr1.zip", "trx/tr1.zip", dry_run=args.dry_run)
+    upload(out_dir / "trx/tr1-ub.zip", "trx/tr1-ub.zip", dry_run=args.dry_run)
+    upload(
+        out_dir / "trx/tr1-demo-pc.zip",
+        "trx/tr1-demo-pc.zip",
+        dry_run=args.dry_run,
+    )
+    upload(out_dir / "trx/tr2.zip", "trx/tr2.zip", dry_run=args.dry_run)
+    upload(out_dir / "trx/tr2-gm.zip", "trx/tr2-gm.zip", dry_run=args.dry_run)
+    upload(out_dir / "trx/tr3.zip", "trx/tr3.zip", dry_run=args.dry_run)
 
 
 if __name__ == "__main__":
