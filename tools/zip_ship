@@ -21,6 +21,7 @@ LEGACY_ZIP_NAME_OVERRIDES: dict[str, str | None] = {
     "tr1-demo-pc": None,
     "tr1-ub": "tr1ub",
     "tr2-gm": "tr2gm",
+    "tr3-la": "tr3la",
 }
 COMBINED_ARCNAME_RULES: dict[str, list[tuple[Path, Path]]] = {
     "tr1": [
@@ -40,6 +41,9 @@ COMBINED_ARCNAME_RULES: dict[str, list[tuple[Path, Path]]] = {
     ],
     "tr3": [
         (Path("data/images"), Path("games/tr3/images")),
+    ],
+    "tr3-la": [
+        (Path("data/images"), Path("games/tr3-la/images")),
     ],
 }
 

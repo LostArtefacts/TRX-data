@@ -42,6 +42,7 @@ def main() -> None:
     upload(out_dir / "legacy/tr2.zip", "tr2x/main.zip", dry_run=args.dry_run)
     upload(out_dir / "legacy/tr2gm.zip", "tr2x/trgm.zip", dry_run=args.dry_run)
     upload(out_dir / "legacy/tr3.zip", "tr3x/main.zip", dry_run=args.dry_run)
+    upload(out_dir / "legacy/tr3la.zip", "tr3x/trla.zip", dry_run=args.dry_run)
 
     upload(out_dir / "trx/tr1.zip", "trx/tr1.zip", dry_run=args.dry_run)
     upload(out_dir / "trx/tr1-ub.zip", "trx/tr1-ub.zip", dry_run=args.dry_run)
@@ -53,6 +54,7 @@ def main() -> None:
     upload(out_dir / "trx/tr2.zip", "trx/tr2.zip", dry_run=args.dry_run)
     upload(out_dir / "trx/tr2-gm.zip", "trx/tr2-gm.zip", dry_run=args.dry_run)
     upload(out_dir / "trx/tr3.zip", "trx/tr3.zip", dry_run=args.dry_run)
+    upload(out_dir / "trx/tr3-la.zip", "trx/tr3-la.zip", dry_run=args.dry_run)
 
 
 if __name__ == "__main__":
