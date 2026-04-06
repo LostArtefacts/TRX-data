@@ -4,13 +4,6 @@ from pathlib import Path
 from subprocess import check_call
 
 ROOT_DIR = Path(__file__).parents[1]
-DIR_PAIRS = (
-    (ROOT_DIR / "tr1/images", ROOT_DIR / "tr1/ship/data/images"),
-    (ROOT_DIR / "tr1ub/images", ROOT_DIR / "tr1ub/ship/data/images"),
-    (ROOT_DIR / "tr2/images", ROOT_DIR / "tr2/ship/data/images"),
-    (ROOT_DIR / "tr2gm/images", ROOT_DIR / "tr2gm/ship/data/images"),
-    (ROOT_DIR / "tr3/images", ROOT_DIR / "tr3/ship/data/images"),
-)
 
 
 def format_size(size: int) -> str:
@@ -25,9 +18,39 @@ def format_size_change(source_size: int, target_size: int) -> str:
     )
 
 
+def iter_dir_names() -> list[str]:
+    dir_names: list[str] = []
+    for images_dir in sorted(ROOT_DIR.glob("*/images")):
+        dir_name = images_dir.parent.name
+        if (ROOT_DIR / dir_name / "ship/data/images").is_dir():
+            dir_names.append(dir_name)
+    return dir_names
+
+
+def get_dir_pair(dir_name: str) -> tuple[Path, Path]:
+    source_dir = ROOT_DIR / dir_name / "images"
+    target_dir = ROOT_DIR / dir_name / "ship/data/images"
+    if not source_dir.is_dir() or not target_dir.is_dir():
+        raise ValueError(dir_name)
+    return source_dir, target_dir
+
+
+def get_dir_pairs(dir_name: str | None) -> list[tuple[Path, Path]]:
+    if dir_name is not None:
+        return [get_dir_pair(dir_name)]
+    return [get_dir_pair(name) for name in iter_dir_names()]
+
+
 def parse_args() -> argparse.Namespace:
+    dir_names = iter_dir_names()
     parser = argparse.ArgumentParser(
         description="Converts image assets to WEBP format for better file sizes"
+    )
+    parser.add_argument(
+        "dir",
+        nargs="?",
+        choices=dir_names,
+        help="directory set to process (defaults to all)",
     )
     parser.add_argument(
         "quality",
@@ -47,11 +70,12 @@ def parse_args() -> argparse.Namespace:
 
 def main() -> None:
     args = parse_args()
+    dir_pairs = get_dir_pairs(args.dir)
 
     total_source_size = 0
     total_target_size = 0
 
-    for source_dir, target_dir in DIR_PAIRS:
+    for source_dir, target_dir in dir_pairs:
         for source_path in source_dir.rglob("*.png"):
             target_path = target_dir / source_path.relative_to(
                 source_dir
