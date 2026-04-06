@@ -1,9 +1,12 @@
 #!/usr/bin/env python3
 import argparse
 from pathlib import Path
-from subprocess import check_call
+from subprocess import check_call, check_output
 
 ROOT_DIR = Path(__file__).parents[1]
+FORCED_RESIZE_TARGETS: dict[tuple[int, int], str] = {
+    (2752, 1536): "2133x1200!",
+}
 
 
 def format_size(size: int) -> str:
@@ -68,6 +71,31 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
+def get_image_size(path: Path) -> tuple[int, int]:
+    width, height = (
+        check_output(
+            [
+                "magick",
+                "identify",
+                "-format",
+                "%w %h",
+                str(path),
+            ],
+            text=True,
+        )
+        .strip()
+        .split()
+    )
+    return int(width), int(height)
+
+
+def get_resize_args(source_path: Path) -> list[str]:
+    forced_target_size = FORCED_RESIZE_TARGETS.get(get_image_size(source_path))
+    if forced_target_size is not None:
+        return ["-resize", forced_target_size]
+    return ["-resize", "x1200>"]
+
+
 def main() -> None:
     args = parse_args()
     dir_pairs = get_dir_pairs(args.dir)
@@ -91,8 +119,7 @@ def main() -> None:
             check_call([
                 "magick",
                 str(source_path),
-                "-resize",
-                "x1200>",
+                *get_resize_args(source_path),
                 "-quality",
                 str(args.quality),
                 str(target_path),
