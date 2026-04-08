@@ -104,7 +104,7 @@ def main() -> None:
     total_target_size = 0
 
     for source_dir, target_dir in dir_pairs:
-        for source_path in source_dir.rglob("*.png"):
+        for source_path in sorted(source_dir.rglob("*.png")):
             target_path = target_dir / source_path.relative_to(
                 source_dir
             ).with_suffix(".webp")
