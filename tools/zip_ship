@@ -46,6 +46,9 @@ COMBINED_ARCNAME_RULES: dict[str, list[tuple[Path, Path]]] = {
     "tr3-la": [
         (Path("data/images"), Path("games/tr3-la/images")),
     ],
+    "tr4": [
+        (Path("data/images"), Path("games/tr4/images")),
+    ],
 }
 
 
