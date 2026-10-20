@@ -55,6 +55,7 @@ def main() -> None:
     upload(out_dir / "trx/tr2-gm.zip", "trx/tr2-gm.zip", dry_run=args.dry_run)
     upload(out_dir / "trx/tr3.zip", "trx/tr3.zip", dry_run=args.dry_run)
     upload(out_dir / "trx/tr3-la.zip", "trx/tr3-la.zip", dry_run=args.dry_run)
+    upload(out_dir / "trx/tr4.zip", "trx/tr4.zip", dry_run=args.dry_run)
 
 
 if __name__ == "__main__":
